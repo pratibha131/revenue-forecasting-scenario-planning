@@ -73,7 +73,7 @@ CSV Revenue Dataset
 ---
 
 ## 📦 What’s Inside the Repo
-
+`
 ├── data/
 │ └── processed/
 │ └── monthly_revenue_…csv # Clean revenue dataset
@@ -90,7 +90,7 @@ CSV Revenue Dataset
 │ └── stress_testing.py # Stress scenario helpers
 ├── Procfile # Render deployment config
 ├── requirements.txt # Python deps
-└── README.md
+└── README.md`
 
 
 ---
@@ -143,16 +143,18 @@ uncertainty intervals
 
 Clone the repo:
 
-`git clone https://github.com/pratibha131/revenue-forecasting-scenario-planning.git
-cd revenue-forecasting-scenario-planning`
+`git clone https://github.com/pratibha131/revenue-forecasting-scenario-planning.git`
+`cd revenue-forecasting-scenario-planning`
 
 
 Create a virtual environment & install deps:
 
-`python -m venv venv
-source venv/bin/activate      # macOS/Linux
-venv\Scripts\activate         # Windows
-pip install -r requirements.txt `
+`python -m venv venv`
+`source venv/bin/activate `     # macOS/Linux
+
+`venv\Scripts\activate `        # Windows
+
+`pip install -r requirements.txt` 
 
 
 Run the app:
@@ -169,8 +171,11 @@ Open in browser:
 ## 🧠 Future Improvements
 
 ✔ Add exogenous macro drivers (e.g., CPI, pricing)
+
 ✔ Schedule automated retraining jobs
+
 ✔ Add user authentication for retrain endpoint
+
 ✔ Add CI/CD (GitHub Actions → Render)
 
 ---
