@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Revenue Forecasting Dashboard</title>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+        }
+
+        h1 {
+            margin-bottom: 10px;
+        }
+
+        .container {
+            max-width: 1100px;
+        }
+
+        canvas {
+            margin-top: 30px;
+        }
+
+        table {
+            border-collapse: collapse;
+            margin-top: 30px;
+            width: 60%;
+        }
+
+        th, td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: right;
+        }
+
+        th {
+            background-color: #f5f5f5;
+        }
+
+        td:first-child, th:first-child {
+            text-align: left;
+        }
+
+        .risk {
+            font-weight: bold;
+            color: #b00020;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Revenue Forecast & Scenario Planning</h1>
+    <p>12-month revenue forecast with risk scenarios</p>
+
+    <!-- Forecast Chart -->
+    <canvas id="forecastChart"></canvas>
+
+    <!-- Scenario Summary -->
+    <table>
+        <thead>
+            <tr>
+                <th>Scenario</th>
+                <th>12M Revenue</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Upside</td>
+                <td id="upside"></td>
+            </tr>
+            <tr>
+                <td>Base</td>
+                <td id="base"></td>
+            </tr>
+            <tr>
+                <td>Downside</td>
+                <td id="downside"></td>
+            </tr>
+            <tr>
+                <td class="risk">Revenue at Risk</td>
+                <td class="risk" id="risk"></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<script>
+const API_BASE = "http://127.0.0.1:5000";
+
+// --------------------
+// Fetch forecast data
+// --------------------
+fetch(`${API_BASE}/forecast`)
+    .then(res => res.json())
+    .then(data => {
+        const ctx = document.getElementById("forecastChart").getContext("2d");
+
+        new Chart(ctx, {
+            type: "line",
+            data: {
+                labels: data.dates,
+                datasets: [
+                    {
+                        label: "Base Forecast",
+                        data: data.base,
+                        borderColor: "blue",
+                        fill: false
+                    },
+                    {
+                        label: "Upside",
+                        data: data.upside,
+                        borderColor: "green",
+                        borderDash: [5,5],
+                        fill: false
+                    },
+                    {
+                        label: "Downside",
+                        data: data.downside,
+                        borderColor: "red",
+                        borderDash: [5,5],
+                        fill: false
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: {
+                        display: false
+                    }
+                }
+            }
+        });
+    });
+
+// -------------------------
+// Fetch scenario summary
+// -------------------------
+fetch(`${API_BASE}/scenario-summary`)
+    .then(res => res.json())
+    .then(data => {
+        document.getElementById("base").innerText =
+            data.base_12m.toLocaleString(undefined, { maximumFractionDigits: 0 });
+
+        document.getElementById("upside").innerText =
+            data.upside_12m.toLocaleString(undefined, { maximumFractionDigits: 0 });
+
+        document.getElementById("downside").innerText =
+            data.downside_12m.toLocaleString(undefined, { maximumFractionDigits: 0 });
+
+        document.getElementById("risk").innerText =
+            data.revenue_at_risk.toLocaleString(undefined, { maximumFractionDigits: 0 });
+    });
+</script>
+
+</body>
+</html>
