@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <title>Revenue Forecasting Dashboard</title>
 
-    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
@@ -49,6 +48,18 @@
             font-weight: bold;
             color: #b00020;
         }
+
+        /* Insights box */
+        .insights {
+            margin-top: 30px;
+            padding: 20px;
+            border-left: 6px solid #1976d2;
+            background-color: #f7f9fc;
+        }
+
+        .insights h3 {
+            margin-top: 0;
+        }
     </style>
 </head>
 <body>
@@ -87,14 +98,19 @@
             </tr>
         </tbody>
     </table>
+
+    <!-- Business Insights -->
+    <div class="insights">
+        <h3>Business Insights & Recommendation</h3>
+        <p id="insight-text">Loading insights...</p>
+    </div>
 </div>
 
 <script>
 const API_BASE = "http://127.0.0.1:5000";
 
-// --------------------
 // Fetch forecast data
-// --------------------
+
 fetch(`${API_BASE}/forecast`)
     .then(res => res.json())
     .then(data => {
@@ -115,14 +131,14 @@ fetch(`${API_BASE}/forecast`)
                         label: "Upside",
                         data: data.upside,
                         borderColor: "green",
-                        borderDash: [5,5],
+                        borderDash: [5, 5],
                         fill: false
                     },
                     {
                         label: "Downside",
                         data: data.downside,
                         borderColor: "red",
-                        borderDash: [5,5],
+                        borderDash: [5, 5],
                         fill: false
                     }
                 ]
@@ -130,31 +146,47 @@ fetch(`${API_BASE}/forecast`)
             options: {
                 responsive: true,
                 scales: {
-                    x: {
-                        display: false
-                    }
+                    x: { display: false }
                 }
             }
         });
     });
 
-// -------------------------
 // Fetch scenario summary
-// -------------------------
+
 fetch(`${API_BASE}/scenario-summary`)
     .then(res => res.json())
     .then(data => {
+
+        const base = data.base_12m;
+        const upside = data.upside_12m;
+        const downside = data.downside_12m;
+        const risk = data.revenue_at_risk;
+
         document.getElementById("base").innerText =
-            data.base_12m.toLocaleString(undefined, { maximumFractionDigits: 0 });
+            base.toLocaleString("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 });
 
         document.getElementById("upside").innerText =
-            data.upside_12m.toLocaleString(undefined, { maximumFractionDigits: 0 });
+            upside.toLocaleString("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 });
 
         document.getElementById("downside").innerText =
-            data.downside_12m.toLocaleString(undefined, { maximumFractionDigits: 0 });
+            downside.toLocaleString("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 });
 
         document.getElementById("risk").innerText =
-            data.revenue_at_risk.toLocaleString(undefined, { maximumFractionDigits: 0 });
+            risk.toLocaleString("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 });
+
+        // -------- Business Insight Logic --------
+        let insight = "";
+
+        if (risk / base > 0.03) {
+            insight = "Downside risk is material. Recommended actions include tightening cost controls, delaying discretionary spend, and prioritizing high-margin revenue streams.";
+        } else if (upside > base * 1.02) {
+            insight = "Upside potential outweighs downside risk. This supports selective capacity expansion, marketing investment, or growth initiatives.";
+        } else {
+            insight = "Revenue outlook is stable with limited downside risk. Focus on operational efficiency and incremental growth opportunities.";
+        }
+
+        document.getElementById("insight-text").innerText = insight;
     });
 </script>
 
