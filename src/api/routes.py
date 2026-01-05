@@ -1,4 +1,6 @@
 from flask import Blueprint, jsonify
+import os
+
 from src.modeling.prophet_model import (
     get_forecast,
     train_model,
@@ -6,10 +8,23 @@ from src.modeling.prophet_model import (
 )
 from src.utils.stress_testing import apply_demand_stress
 
-
 api_blueprint = Blueprint("api", __name__)
 
-# Health check
+# ---- PATH SETUP (same logic as app.py) ----
+BASE_DIR = os.path.dirname(
+    os.path.dirname(
+        os.path.dirname(os.path.abspath(__file__))
+    )
+)
+
+DATA_PATH = os.path.join(
+    BASE_DIR,
+    "data",
+    "processed",
+    "monthly_revenue_processed_ALL_YEARS_CORRECT.csv"
+)
+# -----------------------------------------
+
 
 @api_blueprint.route("/", methods=["GET"])
 def health():
@@ -19,22 +34,17 @@ def health():
     })
 
 
-# Forecast endpoint
 @api_blueprint.route("/forecast", methods=["GET"])
 def forecast():
     forecast_df = get_forecast()
 
-    response = {
+    return jsonify({
         "dates": forecast_df["ds"].astype(str).tolist(),
         "base": forecast_df["yhat"].tolist(),
         "upside": forecast_df["yhat_upper"].tolist(),
         "downside": forecast_df["yhat_lower"].tolist()
-    }
+    })
 
-    return jsonify(response)
-
-
-# Scenario summary endpoint
 
 @api_blueprint.route("/scenario-summary", methods=["GET"])
 def scenario_summary():
@@ -51,11 +61,9 @@ def scenario_summary():
         "revenue_at_risk": float(base - downside)
     })
 
+
 @api_blueprint.route("/stress-scenario", methods=["GET"])
 def stress_scenario():
-    """
-    Simulate exogenous demand shock scenarios
-    """
     forecast_df = get_forecast().tail(12)
 
     stress_levels = {
@@ -76,14 +84,10 @@ def stress_scenario():
     return jsonify(results)
 
 
-# Retrain model endpoint
-
 @api_blueprint.route("/retrain", methods=["POST"])
 def retrain():
     try:
-        train_model(
-            data_path=r"C:\Users\Pratibha\OneDrive\Desktop\DATA SCIENCE RESOURCES\revenue-forecasting-scenario-planning\revenue-forecasting-scenario-planning\data\processed\monthly_revenue_processed_ALL_YEARS_CORRECT.csv"
-        )
+        train_model(data_path=DATA_PATH)
 
         metadata = get_training_metadata()
 
