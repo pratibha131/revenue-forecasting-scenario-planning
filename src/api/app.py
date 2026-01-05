@@ -1,6 +1,7 @@
 from flask import Flask, render_template
 import os
 from flask_cors import CORS
+
 from src.api.routes import api_blueprint
 from src.modeling.prophet_model import train_model
 
@@ -30,8 +31,8 @@ def create_app():
         return render_template("index.html")
 
     return app
+app = create_app()
 
 
 if __name__ == "__main__":
-    app = create_app()
     app.run()
