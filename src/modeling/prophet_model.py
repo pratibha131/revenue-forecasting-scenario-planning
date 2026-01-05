@@ -1,15 +1,17 @@
 import pandas as pd
 from prophet import Prophet
+from datetime import datetime
 
 MODEL = None
 FORECAST = None
+LAST_TRAINED_AT = None
 
 
-def load_and_train_model(data_path: str):
+def train_model(data_path: str):
     """
-    Train Prophet model once and cache forecast
+    Train Prophet model and cache forecast
     """
-    global MODEL, FORECAST
+    global MODEL, FORECAST, LAST_TRAINED_AT
 
     df = pd.read_csv(data_path)
     df["Date"] = pd.to_datetime(df["Date"], dayfirst=True)
@@ -40,13 +42,16 @@ def load_and_train_model(data_path: str):
 
     MODEL = model
     FORECAST = forecast
+    LAST_TRAINED_AT = datetime.utcnow()
 
 
 def get_forecast():
-    """
-    Return cached forecast
-    """
     if FORECAST is None:
-        raise RuntimeError("Model not loaded")
-
+        raise RuntimeError("Model not trained yet")
     return FORECAST
+
+
+def get_training_metadata():
+    return {
+        "last_trained_at": LAST_TRAINED_AT.isoformat() if LAST_TRAINED_AT else None
+    }
